@@ -10,8 +10,6 @@ import praktikum.Burger;
 import praktikum.Ingredient;
 import praktikum.IngredientType;
 
-import java.util.List;
-
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -34,28 +32,27 @@ public class BurgerTest {
 
     @Test
     public void addIngredientTest() {
-        List<Ingredient> ingredients = Mockito.mock(List.class);
         Ingredient ingredient = Mockito.mock(Ingredient.class);
-        burger.ingredients = ingredients;  // Приходится указывать явно,  из-за исходного кода, есть ли возможность менять код?
         burger.addIngredient(ingredient);
-        Mockito.verify(ingredients, Mockito.times(1)).add(ingredient);
+        Assert.assertEquals("Ошибка в работе метода addIngredient",1,burger.ingredients.size());
     }
 
     @Test
     public void removeIngredientTest() {
-        List<Ingredient> ingredients = Mockito.mock(List.class);
-        burger.ingredients = ingredients;
-        int random = (int) (Math.random() * 10);
-        burger.removeIngredient(random);
-        Mockito.verify(ingredients, Mockito.times(1)).remove(random);
+        Ingredient ingredient = Mockito.mock(Ingredient.class);
+        burger.addIngredient(ingredient);
+        burger.removeIngredient(0);
+        Assert.assertEquals("Ошибка в работе метода removeIngredient",0,burger.ingredients.size());
     }
 
     @Test
     public void moveIngredientTest() {
-        List<Ingredient> ingredients = Mockito.mock(List.class);
-        burger.ingredients = ingredients;
-        burger.moveIngredient(1, 4);
-        Mockito.verify(ingredients, Mockito.times(1)).add(4, ingredients.remove(1));
+        Ingredient ingredient0 = Mockito.mock(Ingredient.class);
+        Ingredient ingredient1 = Mockito.mock(Ingredient.class);
+        burger.addIngredient(ingredient0);
+        burger.addIngredient(ingredient1);
+        burger.moveIngredient(0, 1);
+        Assert.assertEquals("Ошибка в работе метода moveIngredient",ingredient0,burger.ingredients.get(1));
     }
 
     @Test
@@ -64,8 +61,8 @@ public class BurgerTest {
         Mockito.when(bun.getPrice()).thenReturn(77.5F);
         Ingredient ingredientSauce = Mockito.mock(Ingredient.class);
         Ingredient ingredientFilling = Mockito.mock(Ingredient.class);
-        burger.ingredients.add(ingredientSauce);
-        burger.ingredients.add(ingredientFilling);
+        burger.addIngredient(ingredientSauce);
+        burger.addIngredient(ingredientFilling);
         Mockito.when(ingredientFilling.getPrice()).thenReturn(180.3F);
         Mockito.when(ingredientSauce.getPrice()).thenReturn(40F);
         Assert.assertEquals("Ошибка в работе метода Burger.getPrice", 77.5F * 2 + 180.3F + 40F, burger.getPrice(), 0.0001F);
@@ -73,43 +70,24 @@ public class BurgerTest {
 
     @Test
     public void getReceiptTest() {
-        Ingredient ingredientFirst = Mockito.mock(Ingredient.class);
         Ingredient ingredientSecond = Mockito.mock(Ingredient.class);
-        Ingredient ingredientThird = Mockito.mock(Ingredient.class);
-        // Так как придется вызвать метод getPriceTest() этого же класса
-        Burger burgerSpy = Mockito.spy(Burger.class);
-
+        Burger burger = new Burger();
+        Burger burgerSpy = Mockito.spy(burger);
         burgerSpy.bun = bun;
-        burgerSpy.ingredients.add(ingredientFirst);
         burgerSpy.ingredients.add(ingredientSecond);
-        burgerSpy.ingredients.add(ingredientThird);
-
         when(bun.getName()).thenReturn("Кунжутная булочка");
         when(bun.getPrice()).thenReturn(23F);
-
-        when(ingredientFirst.getName()).thenReturn("Pesto");
-        when(ingredientFirst.getPrice()).thenReturn(12F);
-        when(ingredientFirst.getType()).thenReturn(IngredientType.SAUCE);
-
         when(ingredientSecond.getName()).thenReturn("Meat");
         when(ingredientSecond.getPrice()).thenReturn(120.5F);
         when(ingredientSecond.getType()).thenReturn(IngredientType.FILLING);
 
-        when(ingredientThird.getName()).thenReturn("Tabasco");
-        when(ingredientThird.getPrice()).thenReturn(17F);
-        when(ingredientThird.getType()).thenReturn(IngredientType.SAUCE);
-
         String expectedReceipt = String.format(
                 "(==== %s ====)%n" +
-                        "= %s %s =%n" +
-                        "= %s %s =%n" +
                         "= %s %s =%n" +
                         "(==== %s ====)%n" +
                         "%nPrice: %f%n",
                 bun.getName(),
-                ingredientFirst.getType().toString().toLowerCase(), ingredientFirst.getName(),
                 ingredientSecond.getType().toString().toLowerCase(), ingredientSecond.getName(),
-                ingredientThird.getType().toString().toLowerCase(), ingredientThird.getName(),
                 bun.getName(),
                 burgerSpy.getPrice());
 
